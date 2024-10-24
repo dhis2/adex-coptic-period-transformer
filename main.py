@@ -98,13 +98,5 @@ def convert_coptic_year(period):
     this_day = datetime.datetime(gregorian_date[0], gregorian_date[1], gregorian_date[2])
     return this_day.strftime('%Y')
 
-
-def convert_date_to_quarter_period(date):
-    # Convert the date to a string in the format YYYYQ#
-    this_day = datetime.datetime(date[0], date[1], date[2])
-    quarter = (this_day.month - 1) // 3 + 1
-    return f'{this_day.year}Q{quarter}'
-
-
 if __name__ == '__main__':
     app.run(debug=True)
