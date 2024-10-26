@@ -33,9 +33,8 @@ def process_request():
 
     data['dataValues'] = handle_thirteenth_month(data['dataValues'])
     data['dataValues'] = handle_storedby(data['dataValues'])
+    data['dataValues'] = handle_period(data['dataValues'])
 
-    for data_value in data['dataValues']:
-        data_value['period'] = convert_coptic_period(data_value['period'])
     app.logger.debug(f'Converted data values: {data}')
     request_params = request.args
     app.logger.debug(f'Request parameters: {request_params}')
@@ -72,14 +71,11 @@ def convert_coptic_period(period):
 
 def get_last_day_coptic_month(year, month):
     cal = coptic.monthcalendar(year, month)
-    if len(cal) == 4:
-        if cal[3][0] == 0:
-            last_day = cal[2][0]
-        else:
-            last_day = cal[3][0]
+    if month != 13:
+        return 30
     else:
-        last_day = cal[3][0]
-    return last_day
+        last_week = cal[-1]
+        return max(value for value in last_week if value is not None)
 
 
 def convert_coptic_quarter(period):
@@ -108,9 +104,16 @@ def convert_coptic_month(period):
 def convert_coptic_year(period):
     coptic_year = int(period)
     # Get the last day of the coptic year
-    gregorian_date = coptic.to_gregorian(coptic_year, 13, 30)
+    coptic_last_day = get_last_day_coptic_month(coptic_year, 13)
+    gregorian_date = coptic.to_gregorian(coptic_year, 13, coptic_last_day)
     this_day = datetime.datetime(gregorian_date[0], gregorian_date[1], gregorian_date[2])
     return this_day.strftime('%Y')
+
+
+def handle_period(datavalues):
+    for data_value in datavalues:
+        data_value['period'] = convert_coptic_period(data_value['period'])
+    return datavalues
 
 
 def handle_thirteenth_month(datavalues):
